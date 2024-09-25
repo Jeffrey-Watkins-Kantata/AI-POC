@@ -1,0 +1,53 @@
+<project name="Kimble Build" default="displayProperties" basedir="." xmlns:sf="antlib:com.salesforce">
+
+	<property environment="env"/>
+
+	<property file="build.properties"/>
+
+	<!-- Location of the src to work on temporarily -->
+	<property name="workingRoot" location="working-src" />
+	<!-- Location of the src directory where the artefacts will be deployed from -->
+	<property name="deploymentRoot" location="src" />
+	<!-- Location of the various package.xml files for each task e.g. destructive changes or deployment of reports -->
+	<property name="packageLibrary" location="deployment-packages" />
+
+
+	<target name="displayProperties">
+		<echo message="Kimble Deploy Script" />
+		<echo message="username = ${sf.username}" />
+		<echo message="password = ${sf.password}" />
+		<echo message="sec.token = ${sf.sec.token}" />
+		<echo message="server.url = ${sf.serverurl}" />
+
+		<echo message="Login Url = ${sf.serverurl}/?un=${sf.username}&amp;pw=${sf.password}" />
+		<echo message="Deployments Url = ${sf.serverurl}/?un=${sf.username}&amp;pw=${sf.password}&amp;startURL=%2Fchangemgmt%2FmonitorDeployment.apexp" />
+	</target>
+
+	<path id="ant.additions.classpath">
+		<fileset dir="lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="deployAndTestAndReport" depends="displayProperties">
+		<taskdef name="sfdeploy" classname="com.salesforce.ant.DeployWithXmlReportTask" classpathref="ant.additions.classpath"/>
+		<delete dir="test-report-xml" quiet="true"/>
+		<sfdeploy username="${sf.username}" password="${sf.password}${sf.sec.token}" serverurl="${sf.serverurl}" deployRoot="${deploymentRoot}" testLevel="RunLocalTests" junitreportdir="test-report-xml" maxPoll="3000" pollWaitMillis="10000" logType="None">
+		</sfdeploy>
+	</target>
+
+	<target name="deploy-only" depends="displayProperties">
+		<taskdef name="sfdeployonly" classname="com.salesforce.ant.DeployTask" classpathref="ant.additions.classpath"/>
+		<sfdeployonly username="${sf.username}" password="${sf.password}${sf.sec.token}" serverurl="${sf.serverurl}" deployroot="${deploymentRoot}" runAllTests="false" maxPoll="1000" pollWaitMillis="5000">
+		</sfdeployonly>
+	</target>
+
+	<target name="deploy" depends="displayProperties">
+		<taskdef name="sfdeployonly" classname="com.salesforce.ant.DeployTask" classpathref="ant.additions.classpath"/>
+		<sfdeployonly username="${sf.username}" password="${sf.password}${sf.sec.token}" serverurl="${sf.serverurl}" deployroot="${deploymentRoot}" runAllTests="false" maxPoll="1000" pollWaitMillis="5000">
+		</sfdeployonly>
+	</target>
+
+
+
+</project>
